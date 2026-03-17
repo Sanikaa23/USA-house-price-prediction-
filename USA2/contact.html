@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contact — USA Housing</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Minimal local styles to guarantee nice layout even if css missing */
+    body { font-family: Arial, sans-serif; margin: 18px; color: #222; background: #f4f6f8; }
+    .container { max-width: 900px; margin: 0 auto; padding: 18px; background:#fff; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+    header { margin-bottom: 12px; }
+    h1 { margin:0 0 6px; }
+    p.lead { margin:0 0 18px; color:#555; }
+    form { background: #fbfbfb; padding: 14px; border-radius: 8px; border:1px solid #eee; }
+    label { display:block; margin-top:10px; font-weight:600; color:#333; }
+    input, textarea { width:100%; padding:10px; margin-top:6px; border-radius:6px; border:1px solid #ddd; box-sizing:border-box; font-size:14px; }
+    button { margin-top:12px; padding:10px 14px; border:none; border-radius:6px; background:#1f6feb; color:white; cursor:pointer; font-weight:700; }
+    button:disabled { opacity:0.6; cursor:default; }
+    #contactMsg { display:none; margin-top:12px; padding:10px; border-radius:6px; }
+    .muted { color:#666; font-size:13px; margin-top:10px; }
+    footer { margin-top:18px; color:#888; font-size:13px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Contact</h1>
+      <p class="lead">Have a question or feedback? Send us a message using the form below — we’ll reply as soon as possible.</p>
+    </header>
+
+    <main>
+      <form id="contactForm" autocomplete="on" novalidate>
+        <label for="name">Name</label>
+        <input id="name" name="name" placeholder="Your name" required />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="Email" required />
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="6" placeholder="Write your message..." required></textarea>
+
+        <div style="display:flex;gap:12px;align-items:center">
+          <button type="submit" id="sendBtn">Send message</button>
+          <div id="contactMsg" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="muted">Or email us at <strong>support@example.com</strong> if needed.</div>
+      </form>
+    </main>
+
+    <footer>© 2025 USA Housing Price Explorer</footer>
+  </div>
+
+  <!-- Contact form handler script (keeps same API behaviour) -->
+  <script>
+  (function () {
+    const form = document.getElementById('contactForm');
+    const msgEl = document.getElementById('contactMsg');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function showMessage(text, isError) {
+      msgEl.textContent = text;
+      msgEl.style.display = 'block';
+      msgEl.style.padding = '10px';
+      msgEl.style.borderRadius = '6px';
+      msgEl.style.background = isError ? '#ffecec' : '#e8fff3';
+      msgEl.style.border = isError ? '1px solid #f5c2c2' : '1px solid #b7f0c8';
+      msgEl.style.color = isError ? '#6b0000' : '#084d1d';
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      sendBtn.disabled = true;
+
+      const name = (document.getElementById('name').value || '').trim();
+      const email = (document.getElementById('email').value || '').trim();
+      const message = (document.getElementById('message').value || '').trim();
+
+      if (!name || !email || !message) {
+        showMessage('Please fill all fields.', true);
+        sendBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, message })
+        });
+
+        let payload = null;
+        try { payload = await resp.json(); } catch (err) { /* ignore */ }
+
+        if (resp.ok && (payload && (payload.status === 'ok' || payload.success === true || payload.message))) {
+          showMessage('Message sent — thank you!', false);
+          form.reset();
+        } else {
+          console.error('Contact API error', resp.status, payload);
+          showMessage('Could not send message — check the server logs.', true);
+        }
+      } catch (err) {
+        console.error('Contact fetch failed', err);
+        showMessage('Failed to contact backend. Is the server running?', true);
+      } finally {
+        sendBtn.disabled = false;
+        setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

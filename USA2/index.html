@@ -1,0 +1,333 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>USA Housing Price Explorer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- local hero overrides and quick-stats styles (keeps main style.css for rest) -->
+  <style>
+    /* Hero fixes to match screenshots: clear layout, readable quick stats, no editable text */
+    .hero{height:60vh;background-image:linear-gradient(rgba(4,9,30,0.50),rgba(4,9,30,0.50)), url('images/home-bg.jpg');
+      background-size:cover;background-position:center;display:flex;align-items:center;color:white;padding:18px 12px}
+    .hero-inner{max-width:1100px;margin:0 auto;padding:18px;display:flex;gap:28px;align-items:center}
+    .hero-left{flex:1}
+    .hero-right{width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); padding:18px;border-radius:14px}
+    .hero-right h3{margin:0 0 8px}
+
+    /* Quick stats cards inside hero-right */
+    .qs-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+    .qs-card{background:rgba(255,255,255,0.08);padding:12px;border-radius:10px;display:flex;flex-direction:column}
+    .qs-title{font-size:12px;color:rgba(255,255,255,0.85);font-weight:700}
+    .qs-value{font-size:20px;color:white;font-weight:800;margin-top:6px}
+    .qs-sub{font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px}
+
+    /* animated number niceness */
+    .num-anim { display:inline-block; transform-origin:left center; }
+
+    /* responsive */
+    @media (max-width:980px){
+      .hero-inner{flex-direction:column;gap:18px}
+      .hero-right{width:100%}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">
+    <img class="logo" src="images/logo.png" alt="logo">
+    <div>
+      <div style="font-weight:800">USA Housing</div>
+      <div style="font-size:12px;opacity:0.9">Price Explorer</div>
+    </div>
+  </div>
+
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="explore.html">Explore</a>
+    <a href="insights.html">Insights</a>
+    <a href="predict.html" style="margin-left:12px">Predict</a>
+    <a class="cta" href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner container">
+    <div class="hero-left">
+      <h1>Understand the US Housing Market visually.</h1>
+      <p>Explore price distribution, income relationships, and regional insights using your dataset.</p>
+      <div class="actions" style="margin-top:14px">
+        <a class="cta" href="dashboard.html">View Dashboard</a>
+        <a href="explore.html" style="padding:8px 14px;background:rgba(255,255,255,0.12);color:white;border-radius:10px;font-weight:700">Explore Houses</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <h3 style="margin-top:0">Quick Stats</h3>
+      <div style="color:rgba(255,255,255,0.9);font-size:13px">Snapshot from the dataset</div>
+
+      <div class="qs-grid">
+        <div class="qs-card" id="qs-total-card">
+          <div class="qs-title">Total Samples</div>
+          <div class="qs-value"><span id="qs-total" class="num-anim">—</span></div>
+          <div class="qs-sub">From dataset</div>
+        </div>
+
+        <div class="qs-card" id="qs-avg-card">
+          <div class="qs-title">Avg Price</div>
+          <div class="qs-value">$<span id="qs-avg" class="num-anim">—</span></div>
+          <div class="qs-sub">Estimated</div>
+        </div>
+
+        <div class="qs-card" id="qs-region-card">
+          <div class="qs-title">Top Region</div>
+          <div class="qs-value"><span id="qs-region">—</span></div>
+          <div class="qs-sub">Highest avg price</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <h2 style="margin-top:28px">Featured Listings</h2>
+  <div class="explore-grid">
+    <div class="house-card">
+      <img src="images/house1.jpg" alt="">
+      <div class="meta">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>$250,000</strong><div class="tag">4 rooms</div></div>
+          <div style="text-align:right;color:var(--muted)">Indiana • 10y</div>
+        </div>
+        <p style="margin-top:10px;color:var(--muted)">Well maintained family house with a big garden and parking.</p>
+      </div>
+    </div>
+
+    <div class="house-card">
+      <img src="images/house2.jpg" alt="">
+      <div class="meta">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>$480,000</strong><div class="tag">6 rooms</div></div>
+          <div style="text-align:right;color:var(--muted)">California • 5y</div>
+        </div>
+        <p style="margin-top:10px;color:var(--muted)">Modern villa close to downtown and amenities.</p>
+      </div>
+    </div>
+
+    <div class="house-card">
+      <img src="images/house3.jpg" alt="">
+      <div class="meta">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>$350,000</strong><div class="tag">5 rooms</div></div>
+          <div style="text-align:right;color:var(--muted)">Florida • 8y</div>
+        </div>
+        <p style="margin-top:10px;color:var(--muted)">Spacious property with modern fixtures and pool.</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  © 2025 USA Housing Price Explorer — built for learning & demo
+</footer>
+
+<!-- Load Chart.js + housing data (only include Chart.js once) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+<script src="js/housingData.js"></script>
+
+<!-- Quick Stats: fetch real values and animate numbers (non-clickable) -->
+<script>
+(function(){
+  // Correct ease (easeInOutQuad) that maps [0,1] -> [0,1]
+  function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  // Animation handles to cancel running frames per element
+  const animHandles = new Map();
+
+  // animate numeric text from start -> end (requestAnimationFrame), cancel previous if running
+  function animateCount(el, start, end, duration) {
+    if (!el) return;
+    // cancel prior animation for this element
+    if (animHandles.has(el)) {
+      cancelAnimationFrame(animHandles.get(el).rafId);
+      animHandles.delete(el);
+    }
+
+    const startTime = performance.now();
+    const isInt = Number.isInteger(end);
+
+    function frame(now) {
+      const t = Math.min((now - startTime) / duration, 1);
+      const eased = easeInOutQuad(t);
+      const val = start + (end - start) * eased;
+      // clamp to not go negative
+      const displayVal = Math.max(0, val);
+      el.textContent = isInt ? Math.round(displayVal).toLocaleString() : Math.round(displayVal).toLocaleString();
+
+      if (t < 1) {
+        const rafId = requestAnimationFrame(frame);
+        animHandles.set(el, { rafId });
+      } else {
+        // final value clean-up
+        el.textContent = isInt ? Math.round(Math.max(0, end)).toLocaleString() : Math.round(Math.max(0, end)).toLocaleString();
+        animHandles.delete(el);
+      }
+    }
+
+    // start first frame
+    const rafId = requestAnimationFrame(frame);
+    animHandles.set(el, { rafId });
+  }
+
+  function setText(el, txt) { if (el) el.textContent = txt; }
+
+  // STATE
+  const STATE = {
+    baseTotal: 0,
+    regions: [],      // [{region, avg}, ...] sorted desc by avg
+    currentIdx: 0,
+    timerId: null,
+    tickMinMs: 2000,
+    tickMaxMs: 3000
+  };
+
+  // choose new region index (biased to change, but may repeat occasionally)
+  function chooseNewRegionIndex() {
+    if (STATE.regions.length <= 1) return 0;
+    let idx;
+    // attempt to pick a different index; after a few tries accept current to avoid infinite loop
+    const maxTries = 6;
+    let tries = 0;
+    do {
+      idx = Math.floor(Math.random() * STATE.regions.length);
+      tries++;
+    } while (idx === STATE.currentIdx && tries < maxTries);
+    return idx;
+  }
+
+  // display region and its true average price (animate price only)
+  function displayRegionByIndex(idx) {
+    if (!STATE.regions || STATE.regions.length === 0) return;
+    idx = Math.max(0, Math.min(idx, STATE.regions.length - 1));
+    const item = STATE.regions[idx];
+    const elRegion = document.getElementById('qs-region');
+    const elAvg = document.getElementById('qs-avg');
+
+    if (!elRegion || !elAvg) return;
+
+    // region text updates immediately
+    setText(elRegion, item.region || '—');
+
+    // parse current numeric value shown (strip non-digit)
+    const currText = elAvg.textContent || '';
+    const currNum = Number(currText.replace(/[^0-9.-]/g, '')) || 0;
+    const newVal = Math.round(Math.max(0, item.avg || 0));
+
+    // animate from current to newVal; duration shortened for snappy changes
+    animateCount(elAvg, currNum, newVal, 700);
+
+    STATE.currentIdx = idx;
+  }
+
+  function startLoop() {
+    // clear previous timer
+    if (STATE.timerId) clearTimeout(STATE.timerId);
+
+    function tick() {
+      const nextIdx = chooseNewRegionIndex();
+      displayRegionByIndex(nextIdx);
+      // schedule next tick
+      const ms = Math.random() * (STATE.tickMaxMs - STATE.tickMinMs) + STATE.tickMinMs;
+      STATE.timerId = setTimeout(tick, ms);
+    }
+
+    // initial tick after short pause so initial load shows first values
+    STATE.timerId = setTimeout(tick, 1500);
+  }
+
+  async function loadBaseStats() {
+    try {
+      const resp = await fetch('/api/housing', { cache: 'no-store' });
+      if (!resp.ok) {
+        console.warn('/api/housing returned', resp.status, 'falling back to /data/housing.csv if available');
+        setText(document.getElementById('qs-total'), '—');
+        setText(document.getElementById('qs-avg'), '—');
+        setText(document.getElementById('qs-region'), '—');
+        return;
+      }
+
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        setText(document.getElementById('qs-total'), '—');
+        setText(document.getElementById('qs-avg'), '—');
+        setText(document.getElementById('qs-region'), '—');
+        return;
+      }
+
+      // Ensure numeric price and sensible region field
+      const cleaned = data.map(d => {
+        const price = Number(String(d.price || d.PRICE || 0).replace(/[^0-9.\-]/g, '')) || 0;
+        const region = (d.region || d.state || d.STATE || 'Unknown');
+        return Object.assign({}, d, { price, region });
+      });
+
+      // total
+      const total = cleaned.length;
+      STATE.baseTotal = total;
+      setText(document.getElementById('qs-total'), total.toLocaleString());
+
+      // aggregate avg price per region
+      const agg = Object.create(null);
+      cleaned.forEach(d => {
+        const r = d.region || 'Unknown';
+        if (!agg[r]) agg[r] = { sum: 0, cnt: 0 };
+        agg[r].sum += d.price;
+        agg[r].cnt++;
+      });
+
+      const regions = Object.keys(agg).map(r => ({ region: r, avg: agg[r].sum / agg[r].cnt }));
+      regions.sort((a, b) => b.avg - a.avg);
+      STATE.regions = regions;
+
+      if (regions.length > 0) {
+        const top = regions[0];
+        setText(document.getElementById('qs-region'), top.region || '—');
+        animateCount(document.getElementById('qs-avg'), 0, Math.round(Math.max(0, top.avg)), 900);
+        STATE.currentIdx = 0;
+      } else {
+        setText(document.getElementById('qs-avg'), '—');
+        setText(document.getElementById('qs-region'), '—');
+      }
+
+      startLoop();
+
+    } catch (err) {
+      console.error('Failed to load base quick stats', err);
+      setText(document.getElementById('qs-total'), '—');
+      setText(document.getElementById('qs-avg'), '—');
+      setText(document.getElementById('qs-region'), '—');
+    }
+  }
+
+  // Expose a small control for debugging if desired
+  window.QuickStatsControl = {
+    restart: () => { if (STATE.timerId) clearTimeout(STATE.timerId); loadBaseStats(); },
+    stop: () => { if (STATE.timerId) clearTimeout(STATE.timerId); STATE.timerId = null; }
+  };
+
+  // Run when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadBaseStats);
+  } else {
+    loadBaseStats();
+  }
+})();
+</script>
+</body>
+</html>

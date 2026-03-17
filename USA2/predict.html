@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Predict Price — USA Housing</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* local styles */
+    .predict-wrap { max-width:760px; margin:28px auto; padding:18px; background:white; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    label { display:block; margin-top:10px; font-weight:600; }
+    input[type="number"], input[type="text"] { padding:10px; border-radius:8px; border:1px solid #ddd; width:100%; box-sizing:border-box; }
+    /* Button row: sample on left, predict on right */
+    .button-row { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-top:10px; }
+    .button-left { display:flex; gap:12px; }
+    button { padding:10px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
+    #predictBtn { background:#0d47a1; color:white; }
+    #fillSample { background:#1976d2; color:white; }
+    /* make predict visually separate on the right */
+    .result { margin-top:18px; padding:12px; border-radius:8px; background:#e8fff3; border:1px solid #dff5e8; }
+    .error { background:#ffe6e6; border:1px solid #f5c2c2; }
+    .hint { color:#6b7280; font-size:13px; margin-top:6px; }
+    @media (max-width:700px) { .row { grid-template-columns: 1fr; } .button-row { flex-direction:column-reverse; align-items:stretch } }
+  </style>
+</head>
+<body>
+  <nav style="padding:12px 20px;background:linear-gradient(90deg,#0d47a1,#1976d2);color:white;display:flex;justify-content:space-between;align-items:center">
+    <div style="display:flex;gap:10px;align-items:center">
+      <img src="images/logo.png" alt="logo" style="width:36px;height:36px;border-radius:8px;object-fit:cover">
+      <div style="font-weight:800">USA Housing</div>
+    </div>
+    <div>
+      <a href="index.html" style="color:white;margin-right:12px">Home</a>
+      <a href="dashboard.html" style="color:white;margin-right:12px">Dashboard</a>
+      <a href="contact.html" style="color:white;margin-right:12px">Contact</a>
+      <a href="predict.html" style="color:white;font-weight:700">Predict</a>
+    </div>
+  </nav>
+
+  <main class="predict-wrap">
+    <h1 style="margin-top:0">Predict House Price</h1>
+
+    <p class="hint">Enter values below and press <strong>Predict</strong>. This calls <code>/api/predict</code> on your Flask backend (the server should be running). The response will indicate which model was used. :contentReference[oaicite:0]{index=0}</p>
+
+    <form id="predictForm" autocomplete="on">
+      <div class="row">
+        <div>
+          <label for="income">Income (numeric)</label>
+          <input id="income" name="income" type="number" step="any" placeholder="e.g. 90000" required />
+        </div>
+
+        <div>
+          <label for="rooms">Rooms</label>
+          <input id="rooms" name="rooms" type="number" step="1" placeholder="e.g. 5" required />
+        </div>
+      </div>
+
+      <div>
+        <label for="age">House age (years)</label>
+        <input id="age" name="age" type="number" step="1" placeholder="e.g. 10" required />
+      </div>
+
+      <div class="button-row">
+        <div class="button-left">
+          <button type="button" id="fillSample">Fill sample</button>
+        </div>
+
+        <div style="text-align:right">
+          <button type="submit" id="predictBtn">Predict</button>
+        </div>
+      </div>
+
+      <div id="predictResult" class="result" style="display:none" aria-live="polite"></div>
+    </form>
+
+    <section style="margin-top:18px">
+      <h3>Notes</h3>
+      <ul style="color:#555">
+        <li>The server endpoint <code>/api/predict</code> must be running (your Flask app). :contentReference[oaicite:1]{index=1}</li>
+        <li>If your backend trained a linear model it will be used; otherwise a heuristic is used. The response includes <code>"model"</code>.</li>
+        <li>You can prefill this form from the home page Quick Stats (click a stat to open this page with values).</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+  (function(){
+    // Prefill from query params if present
+    function getQuery() {
+      const q = {};
+      location.search.slice(1).split('&').forEach(p => {
+        if (!p) return;
+        const [k,v] = p.split('=');
+        q[decodeURIComponent(k)] = decodeURIComponent(v || '');
+      });
+      return q;
+    }
+    const q = getQuery();
+    if (q.income) document.getElementById('income').value = q.income;
+    if (q.rooms)  document.getElementById('rooms').value = q.rooms;
+    if (q.age)    document.getElementById('age').value = q.age;
+
+    const form = document.getElementById('predictForm');
+    const btn = document.getElementById('predictBtn');
+    const res = document.getElementById('predictResult');
+    const fillBtn = document.getElementById('fillSample');
+
+    fillBtn.addEventListener('click', () => {
+      document.getElementById('income').value = 90000;
+      document.getElementById('rooms').value = 5;
+      document.getElementById('age').value = 10;
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      res.style.display = 'none';
+      res.classList.remove('error');
+      res.textContent = '';
+
+      const income = parseFloat(document.getElementById('income').value);
+      const rooms = parseInt(document.getElementById('rooms').value, 10);
+      const age = parseInt(document.getElementById('age').value, 10);
+
+      if (Number.isNaN(income) || Number.isNaN(rooms) || Number.isNaN(age)) {
+        res.style.display = 'block';
+        res.classList.add('error');
+        res.textContent = 'Please enter valid numeric values.';
+        btn.disabled = false;
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ income, rooms, age })
+        });
+
+        const payload = await resp.json();
+
+        if (!resp.ok) {
+          res.style.display = 'block';
+          res.classList.add('error');
+          res.textContent = 'Server error: ' + (payload.error || resp.statusText || 'unknown');
+          btn.disabled = false;
+          return;
+        }
+
+        const predicted = payload.predicted_price ?? payload.prediction ?? null;
+        const model = payload.model ?? payload.model_used ?? 'unknown';
+        res.style.display = 'block';
+        res.classList.remove('error');
+        res.innerHTML = `
+          <div><strong>Predicted price:</strong> ${predicted !== null ? ('$' + Number(predicted).toLocaleString()) : 'N/A'}</div>
+          <div style="margin-top:6px;color:#555"><strong>Model:</strong> ${model}</div>
+          <pre style="margin-top:8px;color:#333;background:#fff;padding:8px;border-radius:6px;border:1px solid #eee">${JSON.stringify(payload,null,2)}</pre>
+        `;
+      } catch (err) {
+        res.style.display = 'block';
+        res.classList.add('error');
+        res.textContent = 'Request failed. Is the server running?';
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
